@@ -1,0 +1,38 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  hashedPassword String
+  role           String   @default("user")
+  votes          Vote[]
+  quotes         Quote[]  @relation("UserQuotes")
+}
+
+model Quote {
+  id        String   @id @default(uuid())
+  text      String
+  author    String
+  createdAt DateTime @default(now())
+  votes     Vote[]
+  createdBy String
+  creator   User     @relation("UserQuotes", fields: [createdBy], references: [id])
+}
+
+model Vote {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  quote     Quote    @relation(fields: [quoteId], references: [id])
+  quoteId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, quoteId])
+}
